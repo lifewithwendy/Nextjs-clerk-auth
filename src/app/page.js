@@ -5,11 +5,11 @@ import { useUser } from "@clerk/nextjs";
 export default function Home() {
   const { isSignedIn, user } = useUser(); // Fetch user data in the client
   //collecting the user object from clerk
-  const firstName = user.firstName || "N/A";
-  const lastName = user.lastName || "N/A";
-  const email = user.primaryEmailAddress?.emailAddress || "N/A";
-  const username = user.username || "N/A";
-  const userId = user.id;
+  // const firstName = user.firstName || "N/A";
+  // const lastName = user.lastName || "N/A";
+  // const email = user.primaryEmailAddress?.emailAddress || "N/A";
+  // const username = user.username || "N/A";
+  // const userId = user.id;
 
   return (
     <div className='min-h-screen bg-black px-4 py-12'>

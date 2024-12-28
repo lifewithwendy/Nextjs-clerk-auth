@@ -1,51 +1,59 @@
 import React from 'react'
 import Link from 'next/link'
-import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 
 const Header = () => {
   return (
-    <header className='p-4 shadow-lg bg-transparent bg-gradient-to-b from-purple-900 to-purple-1000'>
-      <div className="max-w-6xl mx-auto flex flex-row items-center justify-between">
-        <div className=" hover:scale-110 transition-all duration-300">
-          {/* logo */}
-          <Link href="/" className="text-2xl font-bold group cursor-pointer">
-            <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700 drop-shadow-md group-hover:from-blue-400 group-hover:to-blue-600 transition-all duration-300'>
-              Auth
+    <header className='bg-black/80 backdrop-blur-sm border-b-4 border-purple-900/50 sticky top-0 z-50'>
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Logo */}
+        <div className="hover:scale-105 transition-all duration-300">
+          <Link href="/" className="text-2xl font-bold">
+            <span className='bg-gradient-to-r from-purple-400 to-purple-600 inline-block text-transparent bg-clip-text'>
+              Next
             </span>
-            <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 drop-shadow-md group-hover:from-red-400 group-hover:to-red-600 transition-all duration-300'>
-              App
-
+            <span className='text-gray-300'>
+              Auth
             </span>
           </Link>
         </div>
 
-        <div className="">
-          {/* header menu buttons */}
-          <nav className='flex flex-row items-center justify-center gap-4'> 
-            <Link href="/about" className="bg-transparent text-white px-2 py-2 rounded-md hover:bg-gray-300 hover:text-black transition-all duration-300">
-              About
-            </Link>
-            <Link href="/" className="bg-transparent text-white px-2 py-2 rounded-md hover:bg-gray-300 hover:text-black transition-all duration-300">
-              Home
-            </Link>
-            <SignedIn>
-              <UserButton />
-              {/* <SignOutButton>
-                Sign Out
-              </SignOutButton> */}
-            </SignedIn>
-            <SignedOut>
-              <SignInButton className="bg-transparent text-white px-2 py-2 rounded-md hover:bg-gray-300 hover:text-black transition-all duration-300">
+        {/* Navigation */}
+        <nav className='flex items-center gap-6'> 
+          <Link 
+            href="/" 
+            className="text-gray-300 hover:text-purple-400 transition-colors"
+          >
+            Home
+          </Link>
+          <Link 
+            href="/about" 
+            className="text-gray-300 hover:text-purple-400 transition-colors"
+          >
+            About
+          </Link>
+
+          {/* Auth Buttons */}
+          <SignedIn>
+            <UserButton 
+              afterSignOutUrl="/"
+              appearance={{
+                baseTheme: 'dark',
+                elements: {
+                  avatarBox: "w-8 h-8 rounded-full border-2 border-purple-500 hover:border-purple-400 transition-colors"
+                }
+              }}
+            />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
                 Sign in
-              </SignInButton>
-            </SignedOut>
-            {/* <Link href="/sign-in" className="bg-transparent text-white px-2 py-2 rounded-md hover:bg-gray-300 hover:text-black transition-all duration-300">
-              Sign In
-            </Link> */}
-          </nav>
-        </div>
+              </button>
+            </SignInButton>
+          </SignedOut>
+        </nav>
       </div>
-      
     </header>
   )
 }

@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { createOrUpdateUser, deleteUser } from '../../../lib/actions/user'
 
 export async function POST(req) {
-  const SIGNING_SECRET = process.env.SIGNING_SECRET
+  const SIGNING_SECRET = process.env.SIGNING_SECRET1
   const headerPayload = await headers()
   
   // Get Svix headers
@@ -15,30 +15,36 @@ export async function POST(req) {
   const payload = await req.json()
   const body = JSON.stringify(payload)
 
-  // If no Svix headers, treat as a test request from Insomnia
+  // If no Svix headers, treat as a test request
   if (!svix_id || !svix_timestamp || !svix_signature) {
     console.log('Test request received:', {
       body: payload,
       headers: Object.fromEntries(headerPayload.entries())
     })
     
-    // Handle test data as if it were a real webhook
     const { type: eventType, data } = payload
     
     if (eventType === 'user.created' || eventType === 'user.updated') {
-      const { id, first_name, last_name, image_url, email_addresses, username } = data
-      const email = email_addresses?.[0]?.email_address
-      
       try {
+        const userData = {
+          id: data.id,
+          first_name: data.first_name || data.firstName || '',
+          last_name: data.last_name || data.lastName || '',
+          username: data.username || data.id,
+          image_url: data.image_url || data.imageUrl || '',
+          email_addresses: [{ email_address: data.email_address || data.email || '' }]
+        }
+
         await createOrUpdateUser(
-          id,
-          first_name,
-          last_name,
-          image_url,
-          email,
-          username
+          userData.id,
+          userData.first_name,
+          userData.last_name,
+          userData.image_url,
+          userData.email_addresses,
+          userData.username
         )
-        console.log('Test user created/updated:', id)
+        console.log('Test user created/updated:', userData.id)
+        console.log(userData);
       } catch (error) {
         console.error("Error creating/updating test user:", error)
         return new Response('Error: Could not create/update test user', {
@@ -60,70 +66,50 @@ export async function POST(req) {
       }
     }
 
-    return new Response('Test request processed and saved to database', { status: 200 })
+    return new Response('Test request processed', { status: 200 })
   }
 
-  // Create new Svix instance with secret
-  const wh = new Webhook(SIGNING_SECRET)
-
-  let evt
-
-  // Verify payload with headers
+  // Handle actual webhook
   try {
-    evt = wh.verify(body, {
+    const wh = new Webhook(SIGNING_SECRET)
+    const evt = wh.verify(body, {
       'svix-id': svix_id,
       'svix-timestamp': svix_timestamp,
       'svix-signature': svix_signature,
     })
-  } catch (err) {
-    console.error('Error: Could not verify webhook:', err)
-    return new Response('Error: Verification error', {
-      status: 400,
-    })
-  }
 
-  // Do something with payload
-  // For this guide, log payload to console
-  const { id } = evt?.data
-  const eventType = evt?.type
-  console.log(`Received webhook with ID ${id} and event type of ${eventType}`)
-  console.log('Webhook payload:', body)
+    const { id } = evt.data
+    const eventType = evt.type
 
-  if (eventType === 'user.created' || eventType === 'user.updated') {
-    const { first_name, last_name, image_url, email_addresses, username } = evt?.data;
-    const email = email_addresses[0].email_address;
-    
-    try {
-      await createOrUpdateUser(
-        id, 
+    if (eventType === 'user.created' || eventType === 'user.updated') {
+      const { 
         first_name, 
         last_name, 
         image_url, 
-        email,
-        username,
+        email_addresses, 
+        username 
+      } = evt.data
+
+      await createOrUpdateUser(
+        id,
+        first_name || '',
+        last_name || '',
+        image_url || '',
+        email_addresses?.[0]?.email_address || '',
+        username || id
       )
-      console.log('User created:', id)
-    } catch (error) {
-      console.error("Error creating or updating user:", error);
-      return new Response('Error: Could not create or update user', {
-        status: 500,
-      })
+      console.log('User created/updated:', id)
+      console.log(evt.data);
     }
 
-  }
-
-  if(eventType === 'user.deleted') {
-    try {
+    if(eventType === 'user.deleted') {
       await deleteUser(id)
       console.log('User deleted:', id)
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      return new Response('Error: Could not delete user', {
-        status: 500,
-      })
     }
-  }
- 
 
-  return new Response('Webhook received', { status: 200 })
+    return new Response('Webhook processed', { status: 200 })
+  } catch (err) {
+    console.error('Webhook error:', err)
+    return new Response('Webhook error', { status: 400 })
+  }
 }

@@ -34,9 +34,9 @@ export async function POST(req) {
           id,
           first_name,
           last_name,
-          username,
           image_url,
-          email
+          email,
+          username
         )
         console.log('Test user created/updated:', id)
       } catch (error) {
@@ -98,9 +98,9 @@ export async function POST(req) {
         id, 
         first_name, 
         last_name, 
-        username, 
         image_url, 
-        email
+        email,
+        username
       )
       console.log('User created:', id)
     } catch (error) {

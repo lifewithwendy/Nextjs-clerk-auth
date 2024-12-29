@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { createOrUpdateUser, deleteUser } from '../../../../lib/actions/user'
 
 export async function POST(req) {
-  const SIGNING_SECRET = process.env.SIGNING_SECRET
+  const SIGNING_SECRET = process.env.SIGNING_SECRET1
   const headerPayload = await headers()
   
   // Get Svix headers
